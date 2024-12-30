@@ -20,7 +20,7 @@ def get_search_tags():
     return active_tags
 
 
-def reset_last_search():
+def reset_search():
     global meals, found_meals
     meals = {}
     for mealItem in found_meals:
@@ -31,7 +31,6 @@ def reset_last_search():
 
 
 def search():
-    # reset_last_search()
     search_term=search_var.get()
     active_tags = get_search_tags()
     print("The search term is : " + search_term)
@@ -83,7 +82,7 @@ class MealItem():
             self.meal_details = lookup_meal_by_id(self.mealid)
         for val in self.meal_details:
             if val.startswith("strIngredient") and self.meal_details[val]:
-                create_tag_button(self.meal_details[val], ing_rc, ingredient_tags_frame)
+                create_tag_button(self.meal_details[val], ing_rc, inc_ing_tags_frame)
                 ingredient_tags.update(self.meal_details[val])
 
     def deselect_meal(self):
@@ -138,10 +137,11 @@ tab1.grid_rowconfigure(0, weight=1)
 tab1.grid_columnconfigure(0, weight=1)
 
     # Create tabs for tag selections
+s = ttk.Style()
+s.configure('tags.TFrame', background='light grey')
 tags_notebook = ttk.Notebook(scrollable_frame)
 tags_notebook.grid(row=3, column=1, padx=10, pady=10)
 inc_tag_tab = ttk.Frame(tags_notebook)
-# inc_tag_tab.config(Background="black")
 exc_tag_tab = ttk.Frame(tags_notebook)
 
 
@@ -152,11 +152,11 @@ selected_meals_frame.grid(row=1, column=1)
 search_frame = ttk.Frame(scrollable_frame)
 search_frame.grid(row=2, column=1)
 
-category_tags_frame = ttk.Frame(inc_tag_tab)#scrollable_frame)
-category_tags_frame.grid(row=3, column=1)
+inc_category_tags_frame = ttk.Frame(inc_tag_tab, borderwidth=1, relief="solid", style="tags.TFrame")
+inc_category_tags_frame.grid(row=3, column=1)
 
-ingredient_tags_frame = ttk.Frame(inc_tag_tab)#scrollable_frame)
-ingredient_tags_frame.grid(row=4, column=1, pady=10)
+inc_ing_tags_frame = ttk.Frame(inc_tag_tab, borderwidth=1, relief="solid", style="tags.TFrame")
+inc_ing_tags_frame.grid(row=4, column=1, pady=10)
 
 found_meals_frame = ttk.Frame(scrollable_frame)
 found_meals_frame.grid(row=5, column=1)
@@ -166,7 +166,7 @@ search_box = ttk.Entry(search_frame, textvariable=search_var)
 search_box.grid(row=1, column=1)
 search_btn = tk.Button(search_frame, text='Search', command=search)
 search_btn.grid(row=1, column=2)
-reset_btn = tk.Button(search_frame, text='Reset', command=reset_last_search)
+reset_btn = tk.Button(search_frame, text='Reset', command=reset_search)
 reset_btn.grid(row=1, column=3)
 
 tags_notebook.add(inc_tag_tab, text="Inclusive Tags")
@@ -185,7 +185,7 @@ tabControl.add(tab3, text='Shopping list')
 tabControl.pack(expand=1, fill="both")
 
 for cat in get_meal_categories():
-    create_tag_button(cat, cat_rc, category_tags_frame)
+    create_tag_button(cat, cat_rc, inc_category_tags_frame)
 
 # for meal in selected_meals:
 #     get_ingredients
