@@ -1,12 +1,11 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from recipe_db_service import get_meal_categories, filter_by_category, lookup_meal_by_id
+from recipe_db_service import *
 
 # Globals
 search_tags = []
 cat_rc = [1,1]
 meals = {}
-found_meals = []
 meals_rc = [1,1]
 selected_meals = []
 ingredient_tags = set()
@@ -14,38 +13,48 @@ ing_rc = [1,1]
 
 # Functions
 def get_search_tags():
-    active_tags = [tag.cget('text') for tag in search_tags if tag.toggled.get() == 1]
-    # for tag in search_tags:
-    #     tag.toggled.set(0)
+    active_tags = [(tag.cget('text'),tag.context) for tag in search_tags if tag.toggled.get() == 1]
     return active_tags
 
 
 def reset_search():
-    global meals, found_meals
-    meals = {}
-    for mealItem in found_meals:
-        mealItem.frame.destroy()
-    found_meals = []
+    global meals, ing_rc
+    for _,mealItem in meals.items():
+        if not mealItem.selected:
+            mealItem.frame.destroy()
+    meals = {meal[0]:meal[1] for meal in meals.items() if meal[1].selected}
     for tag in search_tags:
-        tag.toggled.set(0)
+        if tag.context == "ingredient":
+            tag.destroy()
+        else:
+            tag.toggled.set(0)
+    ing_rc = [1,1]
+    for _,mealItem in meals.items():
+        mealItem.create_ing_tags()
 
 
 def search():
+    found_meals = {}
     search_term=search_var.get()
     active_tags = get_search_tags()
     print("The search term is : " + search_term)
     print(active_tags)
     for tag in active_tags:
-        meals.update(filter_by_category(tag))
-    print(meals)
-    for meal in meals:
-        create_found_meal_item(meal, meals[meal])
+        if tag[1] == "category":
+            found_meals.update(filter_by_category(tag[0]))
+        elif tag[1] == "ingredient":
+            found_meals.update(filter_by_ingredient(tag[0]))
+    for name,mealid in found_meals.items():
+        if name not in meals.keys():
+            create_found_meal_item(name, mealid)
     search_var.set("")
+    print(meals)
 
 
 class TagButton(tk.Checkbutton):
-    def __init__(self, search_word: str, master: tk.Misc):
+    def __init__(self, search_word: str, context: str, master: tk.Misc):
         self.toggled = tk.IntVar()
+        self.context = context
         super().__init__(master,
         text=search_word,
         variable=self.toggled,
@@ -63,6 +72,7 @@ class MealItem():
         self.meal_details = None
         self.meal_name = meal_name
         self.mealid = mealid
+        self.selected = False
         self.frame = tk.Frame(master)
         self.label = tk.Label(self.frame,
                        text=meal_name)
@@ -76,22 +86,29 @@ class MealItem():
 
     def select_meal(self):
         self.frame.destroy()
-        found_meals.remove(self)
         self.__init__(self.meal_name, self.mealid, selected_meals_frame,"-",self.deselect_meal)
         if not self.meal_details:
             self.meal_details = lookup_meal_by_id(self.mealid)
+        self.create_ing_tags()
+        self.selected = True
+
+    def create_ing_tags(self):
         for val in self.meal_details:
             if val.startswith("strIngredient") and self.meal_details[val]:
-                create_tag_button(self.meal_details[val], ing_rc, inc_ing_tags_frame)
+                create_tag_button(self.meal_details[val], "ingredient", ing_rc, inc_ing_tags_frame)
                 ingredient_tags.update(self.meal_details[val])
 
     def deselect_meal(self):
         self.frame.destroy()
-        selected_meals.remove(self)
+        self.selected = False
+        del meals[self.meal_name]
+
+    def __repr__(self):
+        return self.mealid
 
 
-def create_tag_button(search_word: str, tag_rc: list, master: tk.Misc):
-    new_tag = TagButton(search_word, master)
+def create_tag_button(search_word: str, context: str, tag_rc: list, master: tk.Misc):
+    new_tag = TagButton(search_word, context, master)
     new_tag.grid(row=tag_rc[0],column=tag_rc[1])
     if tag_rc[1] < 4:
         tag_rc[1] += 1
@@ -103,8 +120,7 @@ def create_tag_button(search_word: str, tag_rc: list, master: tk.Misc):
 
 def create_found_meal_item(meal_name: str, mealid: int):
     meal_item = MealItem(meal_name, mealid, found_meals_frame)
-    if meal_item.meal_name not in [meal.meal_name for meal in found_meals]:
-        found_meals.append(meal_item)
+    meals[meal_name] = meal_item
 
 # Create main window
 root = tk.Tk()
@@ -185,7 +201,7 @@ tabControl.add(tab3, text='Shopping list')
 tabControl.pack(expand=1, fill="both")
 
 for cat in get_meal_categories():
-    create_tag_button(cat, cat_rc, inc_category_tags_frame)
+    create_tag_button(cat, "category", cat_rc, inc_category_tags_frame)
 
 # for meal in selected_meals:
 #     get_ingredients

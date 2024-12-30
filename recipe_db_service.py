@@ -17,4 +17,8 @@ def lookup_meal_by_id(id: str):
     result = requests.get(API_URI+"lookup.php?i="+id)
     return json.loads(result.text)["meals"][0]
 
-# print(lookup_meal_by_id("52772"))
+def filter_by_ingredient(ingredient: str):
+    ingredient = ingredient.replace(" ","_")
+    result = requests.get(API_URI+"filter.php?i="+ingredient)
+    meals = json.loads(result.text)
+    return {meal["strMeal"]:meal["idMeal"] for meal in meals["meals"]}
