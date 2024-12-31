@@ -47,14 +47,16 @@ def reset_search(reset_toggle=True):
 
 def search():
     reset_search(False)
-    search_term = search_var.get()
+    found_meals = {}
+    for term in search_var.get().replace(",", "").split(" "):
+        if term != "":
+            found_meals.update(filter_by_category(term))
+            found_meals.update(filter_by_ingredient(term))
     active_inc_tags = get_search_tags(inc_search_tags)
     active_exc_tags = get_search_tags(exc_search_tags)
     active_inc_tags += active_exc_tags
-    print("The search term is : " + search_term)
     print(active_inc_tags)
     # Include
-    found_meals = {}
     for tag in active_inc_tags:
         if tag[1] == "category":
             found_meals.update(filter_by_category(tag[0]))
@@ -62,7 +64,7 @@ def search():
             found_meals.update(filter_by_ingredient(tag[0]))
     # Exclude
     for tag in active_exc_tags:
-        if len(found_meals) == 0:
+        if not found_meals:
             break
         if tag[1] == "category":
             filter_meals = filter_by_category(tag[0])
@@ -262,7 +264,5 @@ for cat in get_meal_categories():
         {"inclusive": inc_category_tags_frame, "exclusive": exc_category_tags_frame},
     )
 
-# for meal in selected_meals:
-#     get_ingredients
 
 root.mainloop()
