@@ -2,10 +2,11 @@ import json
 from  os import getenv
 import google.generativeai as genai
 import typing_extensions as typing
+from dotenv import load_dotenv, find_dotenv
 
+load_dotenv(find_dotenv())
 genai.configure(api_key=getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-1.5-pro-latest")
-
 
 class Categories(typing.TypedDict):
     categories: list[str]
