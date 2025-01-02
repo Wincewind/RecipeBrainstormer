@@ -10,15 +10,16 @@ To run the app using a GenAI model, you need to get a key to the API. You can fi
 Once you have an API key, create a `.env` file similarly to the `.env.example`. After this, the calls to the GenAI API should work.
 
 Here's a one-liner to setup and run TheMealDB using version of the app:
+
 For linux:
 
 ```bash
-git clone https://github.com/Wincewind/RecipeBrainstormer.git; cd RecipeBrainstormer/; python3 -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python3 app.py
+git clone https://github.com/Wincewind/RecipeBrainstormer.git; cd RecipeBrainstormer/; python -m venv venv; source venv/bin/activate; pip install -r requirements.txt; python app.py
 ```
 For Windows:
 
 ```bash
-git clone https://github.com/Wincewind/RecipeBrainstormer.git; cd RecipeBrainstormer/; python3 -m venv venv; venv/Scripts/activate; pip install -r requirements.txt; python3 app.py
+git clone https://github.com/Wincewind/RecipeBrainstormer.git; cd RecipeBrainstormer/; python -m venv venv; venv/Scripts/activate; pip install -r requirements.txt; python app.py
 ```
 
 1.  Clone the repository or download it as a zip:
